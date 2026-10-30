@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>霓虹藍光碼錶</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 FontAwesome 圖示 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 引入科技感字體 -->
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* 基礎全域設定 */
+        body {
+            background-color: #080c17; /* 深藍色背景 */
+            font-family: 'Noto Sans TC', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            /* 更新整體背景為指定圖片 */
+            background-image: url('https://postimg.cc/34SGfp9K');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* 碼錶主卡片 */
+        .stopwatch-card {
+            background: rgba(10, 15, 30, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 191, 255, 0.3);
+            border-radius: 2rem;
+            box-shadow: 0 0 30px rgba(0, 191, 255, 0.15),
+                        inset 0 0 20px rgba(0, 191, 255, 0.05);
+            width: 100%;
+            max-width: 380px;
+            padding: 2.5rem 1.5rem;
+            position: relative;
+        }
+
+        /* 標題與左右裝飾線 */
+        .header-glow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            color: #fff;
+            font-size: 1.25rem;
+            font-weight: 500;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            margin-bottom: 2.5rem;
+        }
+        .header-line {
+            height: 2px;
+            width: 40px;
+            background: linear-gradient(90deg, transparent, #00bfff, transparent);
+            box-shadow: 0 0 8px #00bfff;
+        }
+
+        /* 中央圓形錶盤 */
+        .dial-container {
+            position: relative;
+            width: 260px;
+            height: 260px;
+            margin: 0 auto 3rem auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: url('陽光下的熱帶海岸全景.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+        }
+
+        /* 外圈裝飾環 (SVG) */
+        .dial-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            /* 讓外圈有緩慢旋轉的科技感 */
+            animation: rotate-slow 20s linear infinite;
+        }
+        @keyframes rotate-slow {
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 時間顯示文字 */
+        .time-display {
+            font-family: 'Share Tech Mono', monospace;
+            z-index: 10;
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+        }
+        .time-main {
+            font-size: 3.5rem;
+            color: #ffffff;
+            line-height: 1;
+        }
+        .time-ms {
+            font-size: 1.8rem;
+            color: #00d4ff;
+            margin-left: 2px;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.6);
+        }
+
+        /* 按鈕共用樣式 */
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            width: 100%;
+            border: none;
+            outline: none;
+        }
+
+        /* 主按鈕 (左側: 開始/暫停/繼續) */
+        .btn-primary {
+            background: linear-gradient(135deg, #0052cc, #00d4ff);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+        }
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.6);
+            transform: translateY(-2px);
+        }
+        .btn-primary:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 10px rgba(0, 212, 255, 0.4);
+        }
+
+        /* 次按鈕 (右側: 重設) */
+        .btn-secondary {
+            background: #111a2e;
+            color: #fff;
+            border: 1px solid rgba(0, 191, 255, 0.4);
+            box-shadow: inset 0 0 10px rgba(0, 191, 255, 0.1);
+        }
+        
+        /* 啟用狀態下的 Secondary hover */
+        .btn-secondary:not(:disabled):hover {
+            background: #1a2744;
+            border-color: #00bfff;
+            box-shadow: inset 0 0 15px rgba(0, 191, 255, 0.2), 0 0 10px rgba(0, 191, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        .btn-secondary:not(:disabled):active {
+            transform: translateY(1px);
+        }
+
+        /* 禁用狀態 (Disabled) */
+        .btn-secondary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-color: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="stopwatch-card m-4">
+        <!-- 標題區 -->
+        <header class="header-glow">
+            <div class="header-line"></div>
+            <div>
+                <i class="fa-solid fa-stopwatch text-[#00bfff] mr-2"></i>碼錶
+            </div>
+            <div class="header-line"></div>
+        </header>
+
+        <!-- 中央計時器 -->
+        <div class="dial-container">
+            <!-- 裝飾用 SVG 圓環與刻度 -->
+            <svg class="dial-svg" viewBox="0 0 200 200">
+                <defs>
+                    <!-- 發光濾鏡 -->
+                    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="4" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
+                    <!-- 漸層定義 -->
+                    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#007bff" />
+                        <stop offset="100%" stop-color="#00d4ff" />
+                    </linearGradient>
+                </defs>
+                
+                <!-- 暗色底環 -->
+                <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(0, 191, 255, 0.1)" stroke-width="4" />
+                
+                <!-- 發光亮色軌道 -->
+                <circle cx="100" cy="100" r="80" fill="none" stroke="url(#ringGrad)" stroke-width="8" filter="url(#glow)" stroke-linecap="round" stroke-dasharray="400" stroke-dashoffset="100" />
+                
+                <!-- 刻度標記 (每90度一個大標記) -->
+                <g stroke="#00bfff" stroke-width="2" opacity="0.6">
+                    <line x1="100" y1="5" x2="100" y2="15" />
+                    <line x1="100" y1="185" x2="100" y2="195" />
+                    <line x1="5" y1="100" x2="15" y2="100" />
+                    <line x1="185" y1="100" x2="195" y2="100" />
+                </g>
+            </svg>
+
+            <!-- 時間文字顯示 -->
+            <div class="time-display">
+                <span class="time-main" id="display-main">00:00</span>
+                <span class="time-ms" id="display-ms">.00</span>
+            </div>
+        </div>
+
+        <!-- 按鈕區 -->
+        <div class="flex gap-4">
+            <!-- 左側主按鈕 -->
+            <button id="btn-action" class="btn btn-primary">
+                <i class="fa-solid fa-play" id="icon-action"></i>
+                <span id="text-action">開始</span>
+            </button>
+            
+            <!-- 右側次按鈕 (預設禁用) -->
+            <button id="btn-reset" class="btn btn-secondary" disabled>
+                <i class="fa-solid fa-rotate-left"></i>
+                <span>結束</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // DOM 元素取得
+        const displayMain = document.getElementById('display-main');
+        const displayMs = document.getElementById('display-ms');
+        const btnAction = document.getElementById('btn-action');
+        const iconAction = document.getElementById('icon-action');
+        const textAction = document.getElementById('text-action');
+        const btnReset = document.getElementById('btn-reset');
+
+        // 狀態與時間變數
+        let state = 'STOPPED'; // 可選值: 'STOPPED', 'RUNNING', 'PAUSED'
+        let startTime = 0;     // 記錄開始計時的絕對時間點
+        let elapsedTime = 0;   // 記錄已累計的時間 (用於暫停後繼續)
+        let animationFrameId = null;
+
+        // 格式化時間函數 (將毫秒轉換為 MM:SS.ms)
+        function formatTime(ms) {
+            // 計算總分鐘
+            const minutes = Math.floor(ms / 60000);
+            // 計算剩餘秒數
+            const seconds = Math.floor((ms % 60000) / 1000);
+            // 計算毫秒 (取前兩位，即 10 毫秒為單位)
+            const centiseconds = Math.floor((ms % 1000) / 10);
+
+            // 補零處理 (例如 5 變成 '05')
+            const padMin = String(minutes).padStart(2, '0');
+            const padSec = String(seconds).padStart(2, '0');
+            const padMs = String(centiseconds).padStart(2, '0');
+
+            return {
+                main: `${padMin}:${padSec}`,
+                ms: `.${padMs}`
+            };
+        }
+
+        // 更新畫面顯示的時間
+        function updateDisplay(timeToFormat) {
+            const formatted = formatTime(timeToFormat);
+            displayMain.textContent = formatted.main;
+            displayMs.textContent = formatted.ms;
+        }
+
+        // 計時器核心迴圈 (使用 requestAnimationFrame 確保高更新率與流暢度)
+        function timerLoop() {
+            if (state === 'RUNNING') {
+                const now = Date.now();
+                const currentTotalTime = elapsedTime + (now - startTime);
+                updateDisplay(currentTotalTime);
+                animationFrameId = requestAnimationFrame(timerLoop);
+            }
+        }
+
+        // 處理主按鈕 (左側) 點擊事件
+        btnAction.addEventListener('click', () => {
+            if (state === 'STOPPED' || state === 'PAUSED') {
+                // 執行動作：開始或繼續
+                state = 'RUNNING';
+                startTime = Date.now(); // 記錄當下時間作為新的起點
+                
+                // 更新按鈕外觀 (變為暫停)
+                iconAction.className = 'fa-solid fa-pause';
+                textAction.textContent = '暫停';
+                
+                // 啟用重設按鈕
+                btnReset.disabled = false;
+                
+                // 啟動迴圈
+                animationFrameId = requestAnimationFrame(timerLoop);
+                
+            } else if (state === 'RUNNING') {
+                // 執行動作：暫停
+                state = 'PAUSED';
+                const now = Date.now();
+                elapsedTime += (now - startTime); // 累加已流逝的時間
+                
+                cancelAnimationFrame(animationFrameId); // 停止畫面更新
+                
+                // 更新按鈕外觀 (變為繼續)
+                iconAction.className = 'fa-solid fa-play';
+                textAction.textContent = '繼續';
+                
+                // 重設按鈕保持啟用狀態
+            }
+        });
+
+        // 處理重設按鈕 (右側) 點擊事件
+        btnReset.addEventListener('click', () => {
+            // 只有在按鈕未禁用時才能點擊 (防呆)
+            if (btnReset.disabled) return;
+
+            // 執行動作：重設
+            state = 'STOPPED';
+            elapsedTime = 0;
+            startTime = 0;
+            cancelAnimationFrame(animationFrameId);
+            
+            // 重置時間顯示
+            updateDisplay(0);
+            
+            // 恢復主按鈕為初始「開始」狀態
+            iconAction.className = 'fa-solid fa-play';
+            textAction.textContent = '開始';
+            
+            // 禁用重設按鈕
+            btnReset.disabled = true;
+        });
+
+        // 初始化顯示
+        updateDisplay(0);
+
+    </script>
+</body>
+</html>
